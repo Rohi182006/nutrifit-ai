@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  postgresql:
+    image: postgres:16-alpine
+    container_name: nutrifit_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: nutrifit_user
+      POSTGRES_PASSWORD: nutrifit_secure_password_2026
+      POSTGRES_DB: nutrifit_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nutrifit_user -d nutrifit_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: nutrifit_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nutrifit_backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://nutrifit_user:nutrifit_secure_password_2026@postgresql:5432/nutrifit_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=nutrifit_ai_super_secret_jwt_key_2026_fitness_health_secure
+      - API_V1_STR=/api/v1
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nutrifit_frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,0 +1,22 @@
+# Ignore local virtualenvs & node modules
+**/node_modules
+**/venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+*.db
+*.sqlite3
+
+# Git & IDE
+.git
+.gitignore
+.vscode
+.idea
+*.log
+
+# Temp files
+scratch/
